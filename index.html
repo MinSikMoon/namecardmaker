@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.0.0/papaparse.min.js"></script>
-    <script src="js/namecard.min.js"></script>
+    <script src="js/namecard.js"></script>
 
     <link
       href="https://hangeul.pstatic.net/hangeul_static/css/nanum-gothic.css"
@@ -14,7 +14,8 @@
         #download,
         #file,
         #title,
-        #description {
+        #description,
+        #contents {
           display: none;
         }
         .print-page {
@@ -44,9 +45,14 @@
         outline: none;
       }
 
+      #file:hover{
+        background-color: #1f5621;
+      }
+
       #download {
         padding: 10px 20px;
-        color: black;
+        background-color: #008ace;
+        color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
@@ -54,7 +60,8 @@
       }
 
       #download:hover {
-        background-color: #008ace;
+        color: white;
+        background-color: #024668;
       }
       .square {
         width: 19.7cm;
@@ -142,7 +149,17 @@
       }
 
       .contents {
-        padding-top: 20px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border: solid;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+        background-color: #e7e9eb;
       }
     </style>
   </head>
@@ -155,11 +172,12 @@
         style="background-color: #e7e9eb; border-radius: 10px; padding: 2px"
       >
         <blockquote>
-          <h3>명패봇'으로 회의용 명패 제작을 손쉽게 할 수 있습니다.</h3>
+          <h3>명패봇으로 회의용 명패 제작을 손쉽게 할 수 있습니다.</h3>
           <h4>
             ▣ (사용방법) 회사, 이름, 직급 3가지 정보를 가진 CSV 파일을 불러오면
             끝!
           </h4>
+          <p>※ 글자가 깨진다면 인코딩 타입을 바꿔보세요.</p>
           <p>
             ※ (CSV파일 예시) csv 파일의 첫째줄은 영어로 Company, Name,
             Position이어야 합니다.
@@ -173,7 +191,14 @@
           </blockquote>
         </blockquote>
       </div>
-      <div class="contents">
+      <div class="contents" id="contents">
+        <div>
+          <label for="encoding-type">인코딩 타입</label>
+          <select name="encoding-type" id="encoding-type">
+            <option value="EUC-KR">EUC-KR</option>
+            <option value="UTF-8">UTF-8</option>
+          </select>
+        </div>
         <input type="file" id="file" accept=".csv" />
         <button id="download" onclick="window.print()">프린트하기</button>
       </div>

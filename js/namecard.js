@@ -2,20 +2,30 @@ window.onload = function () {
   const input = document.getElementById("file");
   const nameplateDiv = document.getElementById("nameplate");
   const downloadBtn = document.getElementById("download");
+  let encodingTypeSelect = document.querySelector(
+    'select[name="encoding-type"]'
+  );
+  let encodingType = "EUC-KR";
+
   const setStartDiv = (index) => {
     return index % 2 == 0 ? '<div class="print-page">' : "";
   };
   const setEndDiv = (index, fullLength) => {
     return index % 2 == 0 || index != fullLength - 1 ? "" : "</div>";
   };
-  input.addEventListener('click', function(event){
-    nameplateDiv.innerHTML = '';
+
+  encodingTypeSelect.addEventListener("change", function () {
+    encodingType = encodingTypeSelect.value;
+    input.value = '';
+  });
+  input.addEventListener("click", function (event) {
+    nameplateDiv.innerHTML = "";
   });
   input.addEventListener("change", function (event) {
     const file = event.target.files[0];
 
     Papa.parse(file, {
-      encoding: "EUC-KR",
+      encoding: encodingType,
       header: true,
       complete: function (results) {
         results.data.forEach((data, index) => {
