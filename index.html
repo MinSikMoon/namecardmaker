@@ -157,20 +157,33 @@
         justify-content: space-around;
         align-items: center;
         padding: 10px;
-        margin-top: 10px;
-        margin-bottom: 10px;
+        margin-top: 15px;
+        margin-bottom: 15px;
         border: solid;
         border-radius: 4px;
         cursor: pointer;
         outline: none;
         background-color: #e7e9eb;
       }
+
+      .ad{
+        margin: 15px;
+        display: flex;
+        justify-content: center;
+      }
+
+      #title {
+        display: flex;
+        justify-content: center;
+      }
     </style>
   </head>
 
   <body>
     <div class="center">
-      <h1 id="title">👻명패봇(NameCardMaker)</h1>
+      <div id="title">
+        <h1>👻명패봇(NameCardMaker)</h1>
+      </div>
       <div
         id="description"
         style="background-color: #e7e9eb; border-radius: 10px; padding: 2px"
@@ -195,6 +208,15 @@
           </blockquote>
         </blockquote>
       </div>
+      <div class="ad">
+        <ins
+          class="kakao_ad_area"
+          style="display: none"
+          data-ad-unit="DAN-KbVZsVftzf55obyT"
+          data-ad-width="728"
+          data-ad-height="90"
+        ></ins>
+      </div>
       <div class="contents" id="contents">
         <div>
           <label for="encoding-type">인코딩 타입</label>
@@ -206,13 +228,6 @@
         <input type="file" id="file" accept=".csv" />
         <button id="download" onclick="window.print()">프린트하기</button>
       </div>
-      <ins
-        class="kakao_ad_area"
-        style="display: none"
-        data-ad-unit="DAN-KbVZsVftzf55obyT"
-        data-ad-width="728"
-        data-ad-height="90"
-      ></ins>
     </div>
     <div id="nameplate"></div>
     <script
