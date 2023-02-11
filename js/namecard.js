@@ -15,6 +15,7 @@ window.onload = function () {
       encoding: "EUC-KR",
       header: true,
       complete: function (results) {
+        nameplateDiv.innerHTML = '';
         results.data.forEach((data, index) => {
           if (typeof data.Name === "undefined") return;
 
