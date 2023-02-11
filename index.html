@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.0.0/papaparse.min.js"></script>
+    <script src="js/namecard.min.js"></script>
+
+    <link
+      href="https://hangeul.pstatic.net/hangeul_static/css/nanum-gothic.css"
+      rel="stylesheet"
+    />
+    <style>
+      @media print {
+        #download,
+        #file,
+        #title,
+        #description {
+          display: none;
+        }
+        .print-page {
+          page-break-after: always;
+        }
+        .square {
+          width: 19.7cm;
+          height: 6.5cm;
+        }
+        .body {
+          width: 100%;
+          height: auto;
+        }
+      }
+
+      .nameplate {
+        font-family: "NanumGothicExtraBold";
+      }
+
+      #file {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+      }
+
+      #download {
+        padding: 10px 20px;
+        color: black;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+      }
+
+      #download:hover {
+        background-color: #008ace;
+      }
+      .square {
+        width: 19.7cm;
+        height: 6.5cm;
+        border: 1px solid black;
+        display: flex;
+        flex-direction: column;
+      }
+      .part-sub {
+        width: 100%;
+        height: 7%;
+        display: flex;
+      }
+      .part-sub-inner {
+        width: 25%;
+      }
+      .color1 {
+        background-color: #b2b3b7;
+      }
+      .color2 {
+        background-color: #008ace;
+      }
+      .color3 {
+        background-color: #004c85;
+      }
+      .color4 {
+        background-color: #0472bd;
+      }
+      .part-content {
+        width: 100%;
+        height: 86%;
+        display: flex;
+        flex-direction: column;
+      }
+      .part-content-upper {
+        width: 100%;
+        height: 30%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "NanumGothicExtraBold";
+        font-size: 2.5em;
+        font-weight: 900;
+        letter-spacing: 10px;
+      }
+      .part-content-bottom {
+        width: 100%;
+        height: 70%;
+        display: flex;
+        justify-content: center;
+      }
+      .part-content-bottom-position {
+        width: 35%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "NanumGothicExtraBold";
+        font-size: 4em;
+        letter-spacing: 10px;
+        font-weight: 900;
+      }
+      .part-content-bottom-name {
+        width: 65%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "NanumGothicExtraBold";
+        font-size: 6.5em;
+        letter-spacing: 40px;
+        font-weight: 900;
+      }
+      .rotate {
+        transform: rotate(180deg);
+      }
+
+      .center {
+        width: 50%;
+        margin: 0 auto;
+      }
+
+      #sample-csv {
+        background-color: white;
+      }
+
+      .contents {
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="center">
+      <h1 id="title">👻명패봇(NameCardMaker)</h1>
+      <div
+        id="description"
+        style="background-color: #e7e9eb; border-radius: 10px; padding: 2px"
+      >
+        <blockquote>
+          <h3>명패봇'으로 회의용 명패 제작을 손쉽게 할 수 있습니다.</h3>
+          <h4>
+            ▣ (사용방법) 회사, 이름, 직급 3가지 정보를 가진 CSV 파일을 불러오면
+            끝!
+          </h4>
+          <p>
+            ※ (CSV파일 예시) csv 파일의 첫째줄은 영어로 Company, Name,
+            Position이어야 합니다.
+          </p>
+          <blockquote id="sample-csv">
+            Company,Name,Position
+            <br />
+            갑을상사,홍길동,부장
+            <br />
+            샘숭전자,김철수,대리
+          </blockquote>
+        </blockquote>
+      </div>
+      <div class="contents">
+        <input type="file" id="file" accept=".csv" />
+        <button id="download" onclick="window.print()">프린트하기</button>
+      </div>
+      <ins
+        class="kakao_ad_area"
+        style="display: none"
+        data-ad-unit="DAN-KbVZsVftzf55obyT"
+        data-ad-width="728"
+        data-ad-height="90"
+      ></ins>
+    </div>
+    <div id="nameplate"></div>
+    <script
+      type="text/javascript"
+      src="//t1.daumcdn.net/kas/static/ba.min.js"
+      async
+    ></script>
+  </body>
+</html>
