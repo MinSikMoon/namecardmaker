@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="kr">
   <head>
+    <title>👻명패봇(NameCardMaker)</title>
     <meta charset="UTF-8" />
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.0.0/papaparse.min.js"></script>
     <script src="js/namecard.min.js"></script>
@@ -32,10 +33,12 @@
             끝!
           </h4>
           <p>
-            ※ (CSV파일 예시) csv 파일의 첫째줄은 영어로 Company,Name,Position이어야 합니다.(엑셀로 작성한 다음 저장 시 csv형식으로 저장하면 됨)
+            ※ (CSV파일 예시) csv 파일의 첫째줄은 영어로
+            Company,Name,Position이어야 합니다.(엑셀로 작성한 다음 저장 시
+            csv형식으로 저장하면 됨)
             <a
-            href="https://github.com/MinSikMoon/namecardmaker/raw/main/sample(UTF-8).csv"
-            >샘플.csv</a
+              href="https://github.com/MinSikMoon/namecardmaker/raw/main/sample(UTF-8).csv"
+              >샘플.csv</a
             >
           </p>
           <blockquote id="sample-csv">
@@ -58,13 +61,13 @@
         </div>
       </div>
       <div class="contents" id="contents">
-          <div id="encoding-type-container">
-            <label for="encoding-type">인코딩 타입</label>
-            <select name="encoding-type" id="encoding-type">
-              <option value="EUC-KR">EUC-KR</option>
-              <option value="UTF-8">UTF-8</option>
-            </select>
-          </div>
+        <div id="encoding-type-container">
+          <label for="encoding-type">인코딩 타입</label>
+          <select name="encoding-type" id="encoding-type">
+            <option value="EUC-KR">EUC-KR</option>
+            <option value="UTF-8">UTF-8</option>
+          </select>
+        </div>
         <input type="file" id="file" accept=".csv" />
         <button id="download" onclick="window.print()">프린트하기</button>
       </div>
