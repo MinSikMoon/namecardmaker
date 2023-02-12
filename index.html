@@ -58,13 +58,13 @@
         </div>
       </div>
       <div class="contents" id="contents">
-        <div>
-          <label for="encoding-type">인코딩 타입</label>
-          <select name="encoding-type" id="encoding-type">
-            <option value="EUC-KR">EUC-KR</option>
-            <option value="UTF-8">UTF-8</option>
-          </select>
-        </div>
+          <div id="encoding-type-container">
+            <label for="encoding-type">인코딩 타입</label>
+            <select name="encoding-type" id="encoding-type">
+              <option value="EUC-KR">EUC-KR</option>
+              <option value="UTF-8">UTF-8</option>
+            </select>
+          </div>
         <input type="file" id="file" accept=".csv" />
         <button id="download" onclick="window.print()">프린트하기</button>
       </div>

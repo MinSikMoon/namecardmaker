@@ -25,6 +25,7 @@
 
   #file {
     padding: 10px 20px;
+    width: 35%;
     background-color: #4caf50;
     color: white;
     border: none;
@@ -39,6 +40,7 @@
 
   #download {
     padding: 10px 20px;
+    width: 25%;
     background-color: #008ace;
     color: white;
     border: none;
@@ -159,4 +161,8 @@
   #title {
     display: flex;
     justify-content: center;
+  }
+
+  #encoding-type-container{
+    width: 25%;
   }
