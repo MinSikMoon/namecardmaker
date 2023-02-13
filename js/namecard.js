@@ -7,16 +7,24 @@ window.onload = function () {
   );
   let encodingType = "EUC-KR";
 
-  const setStartDiv = (index) => {
-    return index % 2 == 0 ? '<div class="print-page">' : "";
+  const setDummyDiv = (index) => {
+    return index % 2 == 0
+      ? '<div style="height: 15px; background-color: white; border: none;"></div>'
+      : "";
   };
   const setEndDiv = (index, fullLength) => {
     return index % 2 == 0 || index != fullLength - 1 ? "" : "</div>";
   };
 
+  const setPageBreaker = (index, fullLength) => {
+    return index % 2 == 1 || index == fullLength - 1
+      ? '<div class="print-page"></div>'
+      : "";
+  };
+
   encodingTypeSelect.addEventListener("change", function () {
     encodingType = encodingTypeSelect.value;
-    input.value = '';
+    input.value = "";
   });
   input.addEventListener("click", function (event) {
     nameplateDiv.innerHTML = "";
@@ -76,9 +84,9 @@ window.onload = function () {
   </div>
       `;
           nameplateDiv.innerHTML +=
-            setStartDiv(index) +
+            setDummyDiv(index) +
             nameplate +
-            setEndDiv(index, results.data.length);
+            setPageBreaker(index, results.data.length);
         });
       },
     });
