@@ -32,7 +32,7 @@ window.onload = function () {
           if (typeof data.Name === "undefined") return;
 
           const nameplate = `
-            <div class="square">
+            <div class="square rotate">
     <div class="part-sub">
       <div class="part-sub-inner color1"></div>
       <div class="part-sub-inner color2"></div>
@@ -53,7 +53,7 @@ window.onload = function () {
       <div class="part-sub-inner color1"></div>
     </div>
   </div>
-  <div class="square rotate">
+  <div class="square">
     <div class="part-sub">
       <div class="part-sub-inner color1"></div>
       <div class="part-sub-inner color2"></div>
