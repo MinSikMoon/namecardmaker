@@ -10,7 +10,6 @@
 
   #download,
   #file,
-  #title,
   .description,
   #contents {
     display: none;
@@ -190,8 +189,8 @@
 }
 
 #title {
-  display: flex;
-  justify-content: center;
+  text-align: center;
+  display: block;
 }
 
 #encoding-type-container {
