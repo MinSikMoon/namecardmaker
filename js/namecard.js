@@ -55,10 +55,10 @@ window.onload = function () {
       </div>
     </div>
     <div class="part-sub">
-      <div class="part-sub-inner color4"></div>
-      <div class="part-sub-inner color3"></div>
-      <div class="part-sub-inner color2"></div>
       <div class="part-sub-inner color1"></div>
+      <div class="part-sub-inner color2"></div>
+      <div class="part-sub-inner color3"></div>
+      <div class="part-sub-inner color4"></div>
     </div>
   </div>
   <div class="square">
@@ -76,10 +76,10 @@ window.onload = function () {
       </div>
     </div>
     <div class="part-sub">
-      <div class="part-sub-inner color4"></div>
-      <div class="part-sub-inner color3"></div>
-      <div class="part-sub-inner color2"></div>
       <div class="part-sub-inner color1"></div>
+      <div class="part-sub-inner color2"></div>
+      <div class="part-sub-inner color3"></div>
+      <div class="part-sub-inner color4"></div>
     </div>
   </div>
       `;
