@@ -68,7 +68,8 @@
 .square {
   width: 20.5cm;
   height: 6.8cm;
-  border: 1px solid black;
+  border: 0.5px solid black;
+  border-collapse: collapse;
   display: flex;
   flex-direction: column;
   margin-left: 10px;
