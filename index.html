@@ -1,78 +1,140 @@
 <!DOCTYPE html>
-<html lang="kr">
+<html lang="ko">
   <head>
-    <title>👻명패봇(NameCardMaker)</title>
     <meta charset="UTF-8" />
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.0.0/papaparse.min.js"></script>
-    <script src="js/namecard.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>👻명패봇(NameCardMaker)</title>
     <meta
       name="google-site-verification"
       content="dxY9ea0VUVQlZYzfJPKiVZAkcGMxjLIP7dBBGxO5x-A"
     />
-    <link
-      href="https://hangeul.pstatic.net/hangeul_static/css/nanum-gothic.css"
-      rel="stylesheet"
-    />
-    <link href="css/common.min.css" rel="stylesheet" />
+    <link href="css/fonts.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
   </head>
 
   <body>
-    <div class="center">
-      <h1 id="title">👻명패봇(NameCardMaker)</h1>
-      <div class="description">
-        <blockquote>
-          <h3>명패봇으로 회의용 명패를 손쉽게 만드세요.</h3>
-          <h4>
-            ▣ (사용방법) 회사, 이름, 직급 3가지 정보를 가진 CSV 파일을 불러오면
-            끝!
-          </h4>
-          <p>
-            ※ (CSV파일 예시) 첫째줄이 영어로 Company,Name,Position인 csv파일을
-            작성해주세요.
-            <br />
-            &nbsp;&nbsp;&nbsp;(엑셀로 작성후 csv형식으로 저장하시면 됩니다.
-            <a
-              href="https://github.com/MinSikMoon/namecardmaker/raw/main/sample(UTF-8).csv"
-              >샘플.csv</a
-            >)
-          </p>
-          <blockquote id="sample-csv">
-            Company,Name,Position
-            <br />
-            갑을상사,홍길동,부장
-            <br />
-            샘숭전자,김철수,대리
-          </blockquote>
-          <p>※ 글자가 깨진다면 인코딩 타입을 바꿔보세요.</p>
-          <p>※ 브라우저 인쇄 설정에서 여백을 '없음'으로 설정해주세요.</p>
-        </blockquote>
-        <div class="ad">
-          <ins
-            class="kakao_ad_area"
-            style="display: none"
-            data-ad-unit="DAN-AOmn7EPgffiGkHps"
-            data-ad-width="728"
-            data-ad-height="90"
-          ></ins>
+    <div class="shell">
+      <!-- 상단 툴바 -->
+      <header class="topbar noprint">
+        <div class="brand">👻 명패봇 <small>NameCardMaker</small></div>
+
+        <div class="seg" role="radiogroup" aria-label="인쇄 방식">
+          <label title="A4 1장에 2명 · 반으로 접어 세우는 양면 명패">
+            <input type="radio" name="mode" value="fold" /><span>접이식 양면</span>
+          </label>
+          <label title="A4 1장에 4명 · 단면">
+            <input type="radio" name="mode" value="single" /><span>단면</span>
+          </label>
         </div>
-      </div>
-      <div class="contents" id="contents">
-        <div id="encoding-type-container">
-          <label for="encoding-type">인코딩 타입</label>
-          <select name="encoding-type" id="encoding-type">
-            <option value="EUC-KR">EUC-KR</option>
-            <option value="UTF-8">UTF-8</option>
-          </select>
+
+        <div class="topright">
+          <span id="count">0명</span>
+          <button type="button" class="btn primary" id="btn-print">🖨 인쇄 / PDF 저장</button>
         </div>
-        <input type="file" id="file" accept=".csv" />
-        <button id="download" onclick="window.print()">프린트하기</button>
-      </div>
+      </header>
+
+      <!-- 왼쪽 패널 -->
+      <aside class="side noprint">
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab" role="tab" data-tab="content" aria-selected="true">명단</button>
+          <button type="button" class="tab" role="tab" data-tab="style" aria-selected="false">스타일</button>
+        </div>
+
+        <!-- 탭 1: 명단 -->
+        <div class="pane" id="pane-content" role="tabpanel">
+          <div class="lbl">엑셀에서 복사 → 여기에 붙여넣기</div>
+          <textarea
+            id="paste"
+            rows="3"
+            spellcheck="false"
+            placeholder="회사 &#9; 이름 &#9; 직급&#10;갑을상사 &#9; 홍길동 &#9; 부장"
+          ></textarea>
+          <div class="row-btns">
+            <button type="button" class="btn ghost small" id="btn-sample">예시</button>
+            <label class="btn ghost small" for="csvfile">CSV 열기</label>
+            <input type="file" id="csvfile" accept=".csv,.tsv,.txt" hidden />
+            <button type="button" class="btn ghost small danger" id="btn-clear">비우기</button>
+            <details class="help">
+              <summary>입력 규칙</summary>
+              <ul>
+                <li>열 순서: <b>회사 · 이름 · 직급</b> (첫 줄에 제목이 있으면 순서가 달라도 자동 인식)</li>
+                <li>이름·직급 두 열, 이름 한 열만 있어도 됩니다.</li>
+                <li>CSV 파일은 화면에 끌어다 놓아도 열립니다 (인코딩 자동 감지).</li>
+                <li>표 칸에서 Enter = 아래 칸 이동(마지막이면 새 행). 표 안에 엑셀 범위를 붙여넣으면 그 위치부터 채워집니다.</li>
+              </ul>
+            </details>
+          </div>
+
+          <div class="lbl mt">명단 확인·수정</div>
+          <div class="bulk">
+            <input type="text" id="bulkCompany" placeholder="회사명 일괄 입력" />
+            <button type="button" class="btn ghost small" id="btn-bulk">전체 적용</button>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="idx">#</th>
+                  <th>회사</th>
+                  <th>이름</th>
+                  <th>직급</th>
+                  <th class="x"></th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <button type="button" class="btn ghost small addrow" id="btn-add">+ 행 추가</button>
+        </div>
+
+        <!-- 탭 2: 스타일 -->
+        <div class="pane" id="pane-style" role="tabpanel" hidden>
+          <details class="sec" open>
+            <summary>디자인</summary>
+            <div class="secbody">
+              <div class="swatches" id="swatches"></div>
+
+              <div id="solidField" hidden>
+                <div class="lbl mt">단색 선택</div>
+                <div class="palette" id="palette"></div>
+                <label class="custom">
+                  팔레트에 없는 색은 직접 선택
+                  <input type="color" id="solidCustom" value="#0472bd" />
+                </label>
+              </div>
+            </div>
+          </details>
+
+          <details class="sec" open>
+            <summary>글자</summary>
+            <div class="secbody">
+              <div class="lbl">글자 크기 <output id="fontScaleOut">100%</output></div>
+              <input type="range" id="fontScale" min="60" max="120" step="5" value="100" />
+              <label class="check"><input type="checkbox" id="spaced" /> 이름 글자 사이 넓히기</label>
+              <label class="check"><input type="checkbox" id="showCompany" /> 회사명 표시</label>
+            </div>
+          </details>
+        </div>
+      </aside>
+
+      <!-- 캔버스(미리보기): 여기만 스크롤 -->
+      <main class="canvas">
+        <div id="preview">
+          <div id="empty" class="empty noprint">
+            👈 왼쪽에 엑셀 내용을 붙여넣으면<br />여기에 명패가 나타납니다.
+          </div>
+          <div id="sheets"></div>
+        </div>
+      </main>
+
+      <!-- 하단 바 -->
+      <footer class="bottombar noprint">
+        <span>🔒 입력한 명단은 이 브라우저 안에서만 처리·저장되며 서버로 전송되지 않습니다.</span>
+        <span>인쇄 창에서 <b>용지 A4 · 배율 100%</b> (여백·배경 그래픽은 자동)</span>
+      </footer>
     </div>
-    <div id="nameplate"></div>
-    <script
-      type="text/javascript"
-      src="//t1.daumcdn.net/kas/static/ba.min.js"
-      async
-    ></script>
+
+    <script src="js/app.js"></script>
   </body>
 </html>
