@@ -42,12 +42,20 @@
 
         <!-- 탭 1: 명단 -->
         <div class="pane" id="pane-content" role="tabpanel">
-          <div class="lbl">엑셀에서 복사 → 여기에 붙여넣기</div>
+          <div class="lbl">명패에 넣을 항목 <span class="hint">필요한 것만 켜세요</span></div>
+          <div class="fieldchips" id="fieldchips" role="group" aria-label="명패에 넣을 항목">
+            <button type="button" class="fchip" data-field="company" aria-pressed="true">회사명</button>
+            <button type="button" class="fchip" data-field="position" aria-pressed="true">직급</button>
+            <button type="button" class="fchip fixed" aria-pressed="true" disabled title="이름은 항상 들어갑니다">이름</button>
+          </div>
+          <p class="fieldhint" id="fieldhint"></p>
+
+          <div class="lbl mt">엑셀에서 복사 → 여기에 붙여넣기</div>
           <textarea
             id="paste"
             rows="3"
             spellcheck="false"
-            placeholder="회사 &#9; 이름 &#9; 직급&#10;갑을상사 &#9; 홍길동 &#9; 부장"
+            placeholder="엑셀 내용을 붙여넣으세요 (이름만 있어도 됩니다)&#10;오로라상사 &#9; 홍길동 &#9; 부장"
           ></textarea>
           <div class="row-btns">
             <button type="button" class="btn ghost small" id="btn-sample">예시</button>
@@ -58,7 +66,7 @@
               <summary>입력 규칙</summary>
               <ul>
                 <li>열 순서: <b>회사 · 이름 · 직급</b> (첫 줄에 제목이 있으면 순서가 달라도 자동 인식)</li>
-                <li>이름·직급 두 열, 이름 한 열만 있어도 됩니다.</li>
+                <li>이름·직급 두 열, 이름 한 열만 있어도 됩니다. 위의 「명패에 넣을 항목」에서 회사명·직급을 끄면 이름만 있는 명패가 됩니다.</li>
                 <li>CSV 파일은 화면에 끌어다 놓아도 열립니다 (인코딩 자동 감지).</li>
                 <li>표 칸에서 Enter = 아래 칸 이동(마지막이면 새 행). 표 안에 엑셀 범위를 붙여넣으면 그 위치부터 채워집니다.</li>
               </ul>
@@ -66,19 +74,19 @@
           </div>
 
           <div class="lbl mt">명단 확인·수정</div>
-          <div class="bulk">
+          <div class="bulk" id="bulkrow">
             <input type="text" id="bulkCompany" placeholder="회사명 일괄 입력" />
             <button type="button" class="btn ghost small" id="btn-bulk">전체 적용</button>
           </div>
 
           <div class="tablewrap">
-            <table>
+            <table id="tbl">
               <thead>
                 <tr>
                   <th class="idx">#</th>
-                  <th>회사</th>
-                  <th>이름</th>
-                  <th>직급</th>
+                  <th data-f="company">회사</th>
+                  <th data-f="name">이름</th>
+                  <th data-f="position">직급</th>
                   <th class="x"></th>
                 </tr>
               </thead>
@@ -107,12 +115,64 @@
           </details>
 
           <details class="sec" open>
+            <summary>명패 크기</summary>
+            <div class="secbody">
+              <div class="sizebox">
+                <label>가로 <input type="number" id="sizeW" min="3" max="21" step="0.1" inputmode="decimal" value="20" /> cm</label>
+                <span class="x">×</span>
+                <label>세로 <input type="number" id="sizeH" min="1.5" max="29.6" step="0.1" inputmode="decimal" value="6.5" /> cm</label>
+                <button type="button" class="linkbtn" id="btn-size-reset">기본값</button>
+              </div>
+              <p class="note flat">자른 뒤 <b>한 면</b>의 크기를 넣으세요. 접이식은 접은 높이이고, 펼친 높이는 자동으로 2배예요.</p>
+              <p class="fitinfo" id="fitinfo"></p>
+              <p class="fitwarn" id="fitwarn" hidden></p>
+            </div>
+          </details>
+
+          <details class="sec" open>
+            <summary>인쇄 배치</summary>
+            <div class="secbody">
+              <label class="check"><input type="checkbox" id="joined" /> 명패끼리 붙여서 배치</label>
+              <p class="note">명패 사이 간격을 없애 경계선이 하나만 남아요. 자르는 횟수가 줄어듭니다.</p>
+              <label class="check"><input type="checkbox" id="ruler" /> 10cm 확인 눈금 넣기</label>
+              <p class="note">종이 아래 여백에 10cm 선이 인쇄돼요. 자로 재서 10cm가 아니면 인쇄 배율을 100%로 맞추세요.</p>
+            </div>
+          </details>
+
+          <details class="sec" open>
             <summary>글자</summary>
             <div class="secbody">
-              <div class="lbl">글자 크기 <output id="fontScaleOut">100%</output></div>
-              <input type="range" id="fontScale" min="60" max="120" step="5" value="100" />
+              <div class="lbl">글자 크기 <button type="button" class="linkbtn" id="btn-sizes-reset">초기화</button></div>
+              <div class="srow master">
+                <label for="sc-all">전체 크기</label>
+                <input type="range" id="sc-all" data-scale="all" min="50" max="150" step="5" value="100" />
+                <output id="sc-allOut">100%</output>
+              </div>
+              <details class="sub" id="detail-sizes">
+                <summary>세부 조절 <em>회사명·직급·이름·직급 칸</em></summary>
+              <div class="srow">
+                <label for="sc-company">회사명</label>
+                <input type="range" id="sc-company" data-scale="company" min="50" max="150" step="5" value="100" />
+                <output id="sc-companyOut">100%</output>
+              </div>
+              <div class="srow">
+                <label for="sc-position">직급</label>
+                <input type="range" id="sc-position" data-scale="position" min="50" max="150" step="5" value="100" />
+                <output id="sc-positionOut">100%</output>
+              </div>
+              <div class="srow">
+                <label for="sc-name">이름</label>
+                <input type="range" id="sc-name" data-scale="name" min="50" max="150" step="5" value="100" />
+                <output id="sc-nameOut">100%</output>
+              </div>
+              <div class="srow" title="'전문선임조사역'처럼 긴 직급을 크게 보이게 하려면 직급 칸을 넓히세요">
+                <label for="posW">직급 칸 너비</label>
+                <input type="range" id="posW" min="20" max="45" step="1" value="30" />
+                <output id="posWOut">30%</output>
+              </div>
+                <p class="note flat">전체 크기에 곱해지는 값이에요. 칸에 안 들어가는 글자는 그 칸만 자동으로 줄어듭니다. 긴 직급이 작게 나오면 「직급 칸 너비」를 넓혀 보세요.</p>
+              </details>
               <label class="check"><input type="checkbox" id="spaced" /> 이름 글자 사이 넓히기</label>
-              <label class="check"><input type="checkbox" id="showCompany" /> 회사명 표시</label>
             </div>
           </details>
         </div>

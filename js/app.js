@@ -16,9 +16,9 @@
     position: ['position', '직급', '직책', '직위', '직함'],
   };
   const THEMES = {
-    classic: { label: '클래식', c: ['#b2b3b7', '#008ace', '#004c85', '#0472bd'], ink: '#111111' },
-    solid: { label: '단색', c: ['#0472bd', '#0472bd', '#0472bd', '#0472bd'], ink: '#111111' }, // 색은 solidColor로 대체
-    plain: { label: '줄 없음', c: ['transparent', 'transparent', 'transparent', 'transparent'], ink: '#111111' },
+    classic: { label: '클래식', c: ['#b2b3b7', '#008ace', '#004c85', '#0472bd'], ink: '#000000' },
+    solid: { label: '단색', c: ['#0472bd', '#0472bd', '#0472bd', '#0472bd'], ink: '#000000' }, // 색은 solidColor로 대체
+    plain: { label: '줄 없음', c: ['transparent', 'transparent', 'transparent', 'transparent'], ink: '#000000' },
   };
   // 단색 스타일용 팔레트
   const PALETTE = [
@@ -30,11 +30,11 @@
   const HEX = /^#[0-9a-f]{6}$/i;
   // 글자 최대 크기(px, 글자 크기 100% 기준). 칸에 안 들어가면 자동으로 줄어듭니다.
   const MAX_PX = { company: 36, position: 60, name: 120 };
-  const SAMPLE = '회사\t이름\t직급\n갑을상사\t홍길동\t부장\n샘숭전자\t김철수\t대리\n한국은행연합회\t이영희\t과장\n(주)대한민국정밀화학\t남궁민수\t책임연구원';
+  const SAMPLE = '회사\t이름\t직급\n오로라상사\t홍길동\t부장\n푸른솔전자\t김철수\t대리\n해든결금융\t이영희\t과장\n(주)별누리정밀화학\t남궁민수\t책임연구원';
 
   const state = {
     rows: [],
-    opts: { theme: 'classic', solidColor: '#0472bd', mode: 'fold', fontScale: 100, spaced: true, showCompany: true },
+    opts: { theme: 'classic', solidColor: '#0472bd', mode: 'fold', joined: true, ruler: true, size: { w: 20, h: 6.5 }, scale: { all: 100, company: 100, position: 100, name: 100 }, posW: 30, spaced: true, showCompany: true, showPosition: true },
   };
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -130,7 +130,28 @@
           company: String(r.company || ''), name: String(r.name || ''), position: String(r.position || ''),
         }));
       }
-      Object.assign(state.opts, d.opts || {});
+      const saved = d.opts || {};
+      Object.assign(state.opts, saved);
+      // 이전 버전(글자 크기 슬라이더 1개)에서 저장된 값은 '전체 크기'로 이어받기
+      const old = Number.isFinite(saved.fontScale) ? saved.fontScale : 100;
+      const sv = saved.scale && typeof saved.scale === 'object' ? saved.scale : {};
+      const clamp = (v, lo, hi, dflt) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : dflt);
+      state.opts.scale = {
+        all: clamp(sv.all, 50, 150, old),
+        company: clamp(sv.company, 50, 150, 100),
+        position: clamp(sv.position, 50, 150, 100),
+        name: clamp(sv.name, 50, 150, 100),
+      };
+      state.opts.posW = clamp(saved.posW, 20, 45, 30);
+      const sz = saved.size && typeof saved.size === 'object' ? saved.size : {};
+      state.opts.size = {
+        w: Number.isFinite(+sz.w) && +sz.w > 0 ? +sz.w : 20,
+        h: Number.isFinite(+sz.h) && +sz.h > 0 ? +sz.h : 6.5,
+      };
+      state.opts.ruler = saved.ruler !== false;
+      state.opts.showCompany = saved.showCompany !== false;
+      state.opts.showPosition = saved.showPosition !== false;
+      delete state.opts.fontScale;
       if (!THEMES[state.opts.theme]) state.opts.theme = 'classic';
       if (!HEX.test(state.opts.solidColor)) state.opts.solidColor = '#0472bd';
     } catch (e) { /* 무시 */ }
@@ -141,12 +162,19 @@
   /* ------------------------------------------------------------------ */
   const tbody = $('#rows');
 
+  // 켜져 있는 항목만 표에 보임 (꺼도 입력값은 그대로 보존)
+  const visibleFields = () => FIELDS.filter((f) =>
+    (f !== 'company' || state.opts.showCompany) && (f !== 'position' || state.opts.showPosition));
+
   function renderTable(focusI, focusF) {
     tbody.textContent = '';
+    const vf = visibleFields();
+    document.querySelectorAll('#tbl th[data-f]').forEach((th) => { th.hidden = !vf.includes(th.dataset.f); });
+    $('#bulkrow').hidden = !state.opts.showCompany;
     state.rows.forEach((r, i) => {
       const tr = el('tr');
       tr.append(el('td', 'idx', String(i + 1)));
-      FIELDS.forEach((f) => {
+      vf.forEach((f) => {
         const td = el('td');
         const inp = el('input');
         inp.type = 'text';
@@ -213,11 +241,12 @@
     e.preventDefault();
     const grid = parseDelimited(text, '\t');
     const i0 = +inp.dataset.i;
-    const c0 = FIELDS.indexOf(inp.dataset.f);
+    const vf = visibleFields();
+    const c0 = vf.indexOf(inp.dataset.f);
     grid.forEach((cells, di) => {
       while (state.rows.length <= i0 + di) state.rows.push(blank());
       cells.forEach((v, dc) => {
-        const f = FIELDS[c0 + dc];
+        const f = vf[c0 + dc];
         if (f) state.rows[i0 + di][f] = v.replace(/\s*[\r\n]+\s*/g, ' ').trim();
       });
     });
@@ -231,6 +260,7 @@
   function fitBox(cls, text, extra) {
     const box = el('div', `fit ${cls}${extra ? ' ' + extra : ''}`);
     box.dataset.max = MAX_PX[cls];
+    box.dataset.kind = cls;
     box.append(el('span', null, text));
     return box;
   }
@@ -245,7 +275,7 @@
     const body = el('div', 'pbody');
     if (state.opts.showCompany && r.company) body.append(fitBox('company', r.company));
     const main = el('div', 'main');
-    if (r.position) main.append(fitBox('position', r.position));
+    if (state.opts.showPosition && r.position) main.append(fitBox('position', r.position));
     main.append(fitBox('name', r.name, state.opts.spaced ? 'spaced' : ''));
     body.append(main);
     p.append(stripe(), body, stripe());
@@ -258,17 +288,20 @@
     return c;
   }
 
-  // 글자를 칸 너비에 맞춰 자동 축소 (비례 계산 1회 + 검증)
+  // 글자를 칸 너비에 맞춰 자동 축소. 크기 비율은 칸(회사명/직급/이름)마다 따로 적용,
+  // 긴 글자는 그 칸만 알아서 줄어들어 다른 칸에 영향을 주지 않음
+  let fitK = 1; // 명패 크기 배율 (기준 20×6.5cm 대비)
   function fitAll() {
-    const scale = state.opts.fontScale / 100;
     document.querySelectorAll('#sheets .fit').forEach((box) => {
       const span = box.firstChild;
-      const max = parseFloat(box.dataset.max) * scale;
+      const sc = state.opts.scale; // 최종 크기 = 기준 크기 × 명패 크기 배율 × 전체 × 칸별(상대값)
+      const max = parseFloat(box.dataset.max) * fitK * (sc.all / 100) * (sc[box.dataset.kind] / 100);
       box.style.fontSize = max + 'px';
-      const avail = box.clientWidth - 24;
+      const pad = parseFloat(getComputedStyle(box).paddingLeft) * 2;
+      const avail = box.clientWidth - pad;
       const w = span.offsetWidth;
       if (avail > 0 && w > avail) {
-        box.style.fontSize = Math.max(10, Math.floor((max * avail) / w)) + 'px';
+        box.style.fontSize = Math.max(5, Math.floor((max * avail) / w)) + 'px';
       }
     });
   }
@@ -280,6 +313,50 @@
     $('#sheets').style.zoom = z;
   }
 
+  /* ---- 명패 크기 / A4 배치 계산 ---- */
+  const A4 = { w: 21, h: 29.6 }; // 세로 29.7cm 중 1mm 여유 (한 장이 두 장으로 넘어가지 않게)
+  const BASE = { w: 20, h: 6.5 }; // 글자 크기·띠 두께의 기준이 되는 명패 크기(cm)
+  const fmt = (n) => String(+n.toFixed(2));
+
+  // 입력한 크기를 A4에 들어가는 범위로 보정하고 한 장에 몇 개가 들어가는지 계산
+  function layout() {
+    const fold = state.opts.mode === 'fold';
+    const mul = fold ? 2 : 1; // 접이식: 펼친 높이 = 한 면 높이 × 2
+    const gap = state.opts.joined ? 0 : 0.6;
+    const warn = [];
+    let { w, h } = state.opts.size;
+    const lim = (v, lo, hi, label) => {
+      if (v < lo) { warn.push(`${label}는 최소 ${fmt(lo)}cm`); return lo; }
+      if (v > hi) { warn.push(`${label}는 최대 ${fmt(hi)}cm`); return hi; }
+      return v;
+    };
+    w = lim(w, 3, A4.w, '가로');
+    h = lim(h, 1.5, A4.h / mul, '세로');
+    if (warn.length) warn.push('A4에 들어가는 크기로 맞춰서 표시 중이에요');
+    const cols = Math.max(1, Math.floor((A4.w + gap + 1e-6) / (w + gap)));
+    const rows = Math.max(1, Math.floor((A4.h + gap + 1e-6) / (h * mul + gap)));
+    const bottomMargin = (A4.h - (rows * h * mul + (rows - 1) * gap)) / 2;
+    return { w, h, mul, gap, cols, rows, per: cols * rows, warn, bottomMargin, rulerFits: bottomMargin >= 1.1 };
+  }
+
+  function showLayoutInfo(L, fold) {
+    $('#fitinfo').textContent =
+      `A4 1장에 가로 ${L.cols} × 세로 ${L.rows} = ${L.per}명` +
+      (fold ? ` · 펼친 높이 ${fmt(L.h * 2)}cm` : '');
+    const warn = $('#fitwarn');
+    const msgs = L.warn.slice();
+    if (state.opts.ruler && !L.rulerFits) msgs.push('아래 여백이 좁아 10cm 확인 눈금은 생략돼요');
+    warn.textContent = msgs.join(' · ');
+    warn.hidden = !msgs.length;
+  }
+
+  // 인쇄 후 자로 재서 10cm인지 확인하는 눈금 (여백 부분이라 자를 때 버려짐)
+  function rulerEl() {
+    const r = el('div', 'ruler');
+    r.append(el('span', null, '이 선이 자로 10cm인지 확인하세요 (아니면 인쇄 배율 100%로)'));
+    return r;
+  }
+
   function renderCards() {
     const root = $('#sheets');
     root.textContent = '';
@@ -288,13 +365,29 @@
     colors.forEach((c, i) => root.style.setProperty('--s' + (i + 1), c));
     root.classList.toggle('solid', state.opts.theme === 'solid'); // 단색: 띠 조각 사이 이음선 방지
     root.style.setProperty('--ink', t.ink);
+    root.style.setProperty('--pos-w', state.opts.posW + '%');
+
+    const L = layout();
+    fitK = Math.min(L.w / BASE.w, L.h / BASE.h);
+    root.style.setProperty('--pw', L.w + 'cm');
+    root.style.setProperty('--ph', L.h + 'cm');
+    root.style.setProperty('--cols', L.cols);
+    root.style.setProperty('--gap', L.gap + 'cm');
 
     const rows = state.rows.filter((r) => r.name || r.company || r.position);
     const fold = state.opts.mode === 'fold';
-    const per = fold ? 2 : 4;
+    const per = L.per;
     for (let i = 0; i < rows.length; i += per) {
       const sheet = el('div', 'sheet');
-      rows.slice(i, i + per).forEach((r) => sheet.append(fold ? card(r) : panel(r, false)));
+      rows.slice(i, i + per).forEach((r, j) => {
+        const node = fold ? card(r) : panel(r, false);
+        if (state.opts.joined) { // 붙여서 배치: 맞닿는 경계선은 한 줄만 (첫 행/열 제외)
+          if (Math.floor(j / L.cols) > 0) node.classList.add('nt');
+          if (j % L.cols > 0) node.classList.add('nl');
+        }
+        sheet.append(node);
+      });
+      if (state.opts.ruler && L.rulerFits) sheet.append(rulerEl());
       root.append(sheet);
     }
     $('#empty').hidden = rows.length > 0;
@@ -302,6 +395,7 @@
     $('#count').textContent = rows.length
       ? `${rows.length}명 · A4 ${Math.ceil(rows.length / per)}장`
       : '0명';
+    showLayoutInfo(L, fold);
     applyZoom();
     fitAll();
   }
@@ -425,19 +519,76 @@
     });
   });
 
-  // 방식(상단 툴바), 이름 자간, 회사명 표시
+  // 명패에 넣을 항목(회사명·직급) 칩: 이름은 항상 포함
+  function syncFieldChips() {
+    document.querySelectorAll('.fchip[data-field]').forEach((b) => {
+      const on = b.dataset.field === 'company' ? state.opts.showCompany : state.opts.showPosition;
+      b.setAttribute('aria-pressed', String(!!on));
+    });
+    const c = state.opts.showCompany, p = state.opts.showPosition;
+    $('#fieldhint').textContent = '현재 조합: ' + [c && '회사명', p && '직급', '이름'].filter(Boolean).join(' + ');
+  }
+  $('#fieldchips').addEventListener('click', (e) => {
+    const b = e.target.closest('.fchip[data-field]');
+    if (!b) return;
+    const k = b.dataset.field === 'company' ? 'showCompany' : 'showPosition';
+    state.opts[k] = !state.opts[k];
+    syncFieldChips();
+    renderTable();
+    scheduleCards();
+  });
+
+  // 방식(상단 툴바), 이름 자간
   document.addEventListener('change', (e) => {
     const t = e.target;
     if (t.name === 'mode') state.opts.mode = t.value;
     else if (t.id === 'spaced') state.opts.spaced = t.checked;
-    else if (t.id === 'showCompany') state.opts.showCompany = t.checked;
+    else if (t.id === 'joined') state.opts.joined = t.checked;
+    else if (t.id === 'ruler') state.opts.ruler = t.checked;
     scheduleCards();
   });
-  $('#fontScale').addEventListener('input', (e) => {
-    state.opts.fontScale = +e.target.value;
-    $('#fontScaleOut').textContent = state.opts.fontScale + '%';
+
+  // 명패 크기(cm): 한 면 기준. 숫자가 아니거나 0 이하면 무시, 범위를 벗어나면 보정해서 표시(경고 문구)
+  [['sizeW', 'w'], ['sizeH', 'h']].forEach(([id, key]) => {
+    $('#' + id).addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      if (!Number.isFinite(v) || v <= 0) return;
+      state.opts.size[key] = v;
+      scheduleCards();
+    });
+  });
+  $('#btn-size-reset').addEventListener('click', () => {
+    state.opts.size = { w: BASE.w, h: BASE.h };
+    syncUI();
     scheduleCards();
   });
+  // 글자 크기: 회사명 / 직급 / 이름 따로, 직급 칸 너비
+  document.querySelectorAll('input[data-scale]').forEach((inp) => {
+    inp.addEventListener('input', () => {
+      state.opts.scale[inp.dataset.scale] = +inp.value;
+      syncSizes();
+      scheduleCards();
+    });
+  });
+  $('#posW').addEventListener('input', (e) => {
+    state.opts.posW = +e.target.value;
+    syncSizes();
+    scheduleCards();
+  });
+  $('#btn-sizes-reset').addEventListener('click', () => {
+    state.opts.scale = { all: 100, company: 100, position: 100, name: 100 };
+    state.opts.posW = 30;
+    syncSizes();
+    scheduleCards();
+  });
+  function syncSizes() {
+    document.querySelectorAll('input[data-scale]').forEach((inp) => {
+      inp.value = state.opts.scale[inp.dataset.scale];
+      $('#' + inp.id + 'Out').textContent = inp.value + '%';
+    });
+    $('#posW').value = state.opts.posW;
+    $('#posWOut').textContent = state.opts.posW + '%';
+  }
 
   function syncUI() {
     document.querySelectorAll('.swatch').forEach((b) =>
@@ -450,10 +601,13 @@
     document.querySelectorAll('.chip').forEach((c) =>
       c.setAttribute('aria-pressed', String(c.dataset.color === sc)));
     $('#solidCustom').value = sc;
-    $('#fontScale').value = state.opts.fontScale;
-    $('#fontScaleOut').textContent = state.opts.fontScale + '%';
+    syncSizes();
     $('#spaced').checked = !!state.opts.spaced;
-    $('#showCompany').checked = !!state.opts.showCompany;
+    syncFieldChips();
+    $('#joined').checked = !!state.opts.joined;
+    $('#ruler').checked = !!state.opts.ruler;
+    $('#sizeW').value = state.opts.size.w;
+    $('#sizeH').value = state.opts.size.h;
   }
 
   /* ------------------------------------------------------------------ */

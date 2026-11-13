@@ -223,6 +223,39 @@ td.idx { padding: 0 4px; }
 .sec:not([open]) summary::after { content: '⌄'; transform: translateY(-2px); }
 
 .radio, .check { display: block; margin: 8px 0 0; cursor: pointer; }
+.note { margin: 4px 0 0 22px; font-size: 11.5px; color: var(--muted); }
+.note.flat { margin-left: 0; }
+.srow { display: grid; grid-template-columns: 74px 1fr 40px; align-items: center; gap: 6px; margin: 2px 0; }
+.srow label { font-size: 12px; color: var(--text); }
+.srow output { font-size: 11.5px; color: var(--muted); text-align: right; }
+.srow input[type='range'] { margin: 0; }
+.sizebox { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
+.sizebox label { display: flex; align-items: center; gap: 5px; font-size: 12.5px; }
+.sizebox input[type='number'] {
+  width: 68px;
+  font: inherit;
+  text-align: right;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 6px 8px;
+  background: var(--field);
+}
+.sizebox input[type='number']:focus { outline: 2px solid rgba(4, 114, 189, 0.35); border-color: var(--accent); background: #fff; }
+.sizebox .x { color: var(--muted); width: auto; }
+.fitinfo { margin: 8px 0 0; font-size: 12.5px; font-weight: 700; color: var(--accent); }
+.fitwarn { margin: 4px 0 0; font-size: 11.5px; color: var(--danger); }
+.srow.master label { font-weight: 700; }
+.sub { margin-top: 8px; border: 1px solid var(--line); border-radius: 9px; padding: 0 10px; background: #fafbfc; }
+.sub[open] { padding-bottom: 8px; }
+.sub summary { cursor: pointer; list-style: none; padding: 7px 0; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.sub summary::-webkit-details-marker { display: none; }
+.sec .sub summary { justify-content: flex-start; } /* 위쪽 .sec summary의 양끝 정렬·화살표 상속 방지 */
+.sec .sub summary::after { content: none; }
+.sub summary::before { content: '▸'; color: var(--muted); font-size: 11px; }
+.sub[open] summary::before { content: '▾'; }
+.sub summary em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11px; }
+.linkbtn { border: 0; background: none; padding: 0; font: inherit; font-size: 11px; color: var(--accent); cursor: pointer; }
+.linkbtn:hover { text-decoration: underline; }
 input[type='range'] { width: 100%; accent-color: var(--accent); margin: 2px 0 4px; }
 
 .swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -290,28 +323,59 @@ input[type='range'] { width: 100%; accent-color: var(--accent); margin: 2px 0 4p
 .bottombar b { color: var(--text); }
 
 /* ---------- A4 sheet ---------- */
+/* 명패 크기(--pw × --ph), 열 수(--cols), 간격(--gap)은 JS가 입력 크기에서 계산해 #sheets에 지정 */
 .sheet {
+  position: relative;
   width: 21cm;
   height: 29.6cm;
   margin: 0 auto 16px;
-  padding-top: 0.8cm;
   background: #fff;
   box-shadow: 0 2px 14px rgba(20, 30, 50, 0.14);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6cm;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 1), var(--pw, 20cm));
+  justify-content: center; /* 좌우 가운데 */
+  align-content: center; /* 위아래 가운데(여백 균등) */
+  gap: var(--gap, 0cm);
+}
+
+/* 붙여서 배치: 맞닿는 경계선은 한 줄만 (.nt = 위쪽 이웃과 맞닿음, .nl = 왼쪽 이웃과 맞닿음) */
+.panel.nt { border-top: none; }
+.panel.nl { border-left: none; }
+.card.nt .panel.rot { border-bottom: none; } /* 접이식 위쪽 면은 180° 회전이라 CSS의 bottom이 화면상 위쪽 */
+.card.nl .panel:not(.rot) { border-left: none; }
+.card.nl .panel.rot { border-right: none; } /* 회전 면은 left/right도 반대 */
+
+/* 10cm 확인 눈금 */
+.ruler {
+  position: absolute;
+  left: 50%;
+  bottom: 0.3cm;
+  width: 10cm;
+  height: 0.3cm;
+  transform: translateX(-50%);
+  border: 0.5px solid #333;
+  border-top: none;
+}
+.ruler span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.38cm;
+  text-align: center;
+  font: 8px/1 var(--ui-font);
+  color: #333;
+  white-space: nowrap;
 }
 
 /* ---------- name plate ---------- */
 .card { display: flex; flex-direction: column; }
 
 .panel {
-  width: 20cm;
-  height: 6.5cm;
+  width: var(--pw, 20cm);
+  height: var(--ph, 6.5cm);
   border: 0.5px solid #9a9a9a;
   background: #fff;
-  color: var(--ink, #111);
+  color: var(--ink, #000);
   font-family: var(--plate-font);
   display: flex;
   flex-direction: column;
@@ -321,7 +385,7 @@ input[type='range'] { width: 100%; accent-color: var(--accent); margin: 2px 0 4p
 .card .panel.rot { border-top: none; }
 .card .panel:not(.rot) { border-top: 1px dashed #888; }
 
-.stripe { flex: 0 0 0.45cm; display: flex; }
+.stripe { flex: 0 0 calc(var(--ph, 6.5cm) * 0.069); display: flex; } /* 6.5cm일 때 0.45cm */
 .stripe i { flex: 1; }
 .solid .stripe { background: var(--s1); }
 .stripe i:nth-child(1) { background: var(--s1, #b2b3b7); }
@@ -333,17 +397,18 @@ input[type='range'] { width: 100%; accent-color: var(--accent); margin: 2px 0 4p
 .main { flex: 1; min-height: 0; display: flex; }
 
 .fit {
+  min-width: 0; /* 글자 폭만큼 칸이 늘어나 이름 칸을 밀어내는 것 방지 → 칸 폭에 맞춰 글자가 줄어듦 */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 12px;
+  padding: 0 calc(var(--ph, 6.5cm) * 0.0488); /* 6.5cm일 때 약 12px */
   line-height: 1.1;
   white-space: nowrap;
 }
 .fit span { display: inline-block; }
 
-.company { flex: 0 0 1.5cm; font-weight: 900; opacity: 0.8; letter-spacing: 0.04em; }
-.position { flex: 0 0 30%; font-weight: 800; }
+.company { flex: 0 0 calc(var(--ph, 6.5cm) * 0.2308); font-weight: 900; letter-spacing: 0.04em; }
+.position { flex: 0 0 var(--pos-w, 30%); font-weight: 800; }
 .name { flex: 1; min-width: 0; font-weight: 800; }
 .name.spaced span { letter-spacing: 0.22em; margin-right: -0.22em; }
 
@@ -387,3 +452,17 @@ input[type='range'] { width: 100%; accent-color: var(--accent); margin: 2px 0 4p
   }
   .sheet:last-child { page-break-after: auto; break-after: auto; }
 }
+
+/* 명패에 넣을 항목 칩 */
+.lbl .hint { font-weight: 500; color: var(--muted); margin-left: 6px; }
+.fieldchips { display: flex; gap: 6px; flex-wrap: wrap; }
+.fchip {
+  border: 1px solid var(--line); background: #fff; color: var(--muted);
+  border-radius: 999px; padding: 5px 14px; font: inherit; font-weight: 600; cursor: pointer;
+}
+.fchip:hover { border-color: var(--accent); }
+.fchip[aria-pressed='true'] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.fchip.fixed { cursor: default; opacity: .75; border-style: dashed; }
+.fchip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fieldhint { margin: 5px 0 0; font-size: 11.5px; color: var(--muted); }
+.bulk[hidden], th[hidden] { display: none !important; }
